@@ -1,0 +1,98 @@
+{
+  "DEMO-001": {
+    "code": "DEMO-001",
+    "name": "Simulasi Gathering Toko Baja Ringan Surabaya",
+    "type": "gathering_internal",
+    "goal": "sales",
+    "location": "Surabaya",
+    "proposal_cost": 10000000.0,
+    "team_budget": 2000000.0,
+    "actual_participants": 60,
+    "valid_leads": 15,
+    "actual_team_cost": 1800000.0,
+    "revenue": 150000000.0,
+    "days_offset": -95,
+    "verification_status": "terverifikasi",
+    "survey_responses_count": 32,
+    "expected": {
+      "portfolio": "demo",
+      "data_status": "terverifikasi",
+      "sales_ratio": 15.0,
+      "sales_passed": true,
+      "cost_status": "hemat_atau_sesuai",
+      "recommendation": "layak"
+    }
+  },
+  "DEMO-002": {
+    "code": "DEMO-002",
+    "name": "Simulasi Pameran Indobuildtech Expo Jakarta",
+    "type": "join_external",
+    "goal": "awareness",
+    "location": "Jakarta",
+    "proposal_cost": 25000000.0,
+    "team_budget": 5000000.0,
+    "actual_participants": 80,
+    "valid_leads": 25,
+    "actual_team_cost": 4800000.0,
+    "days_offset": -20,
+    "verification_status": "terverifikasi",
+    "survey_responses_count": 35,
+    "kencana_recall_pct": 65.71,
+    "avg_uplift": 0.85,
+    "audience_relevance_pct": 88.57,
+    "expected": {
+      "portfolio": "demo",
+      "data_status": "terverifikasi",
+      "awareness_passed": true,
+      "cost_status": "hemat_atau_sesuai",
+      "recommendation": "layak"
+    }
+  },
+  "DEMO-003": {
+    "code": "DEMO-003",
+    "name": "Simulasi Temu Kemitraan Aplikator Bandung",
+    "type": "gathering_internal",
+    "goal": "relationship",
+    "location": "Bandung",
+    "proposal_cost": 15000000.0,
+    "team_budget": 3000000.0,
+    "actual_participants": 25,
+    "valid_leads": 8,
+    "actual_team_cost": 2900000.0,
+    "days_offset": -15,
+    "verification_status": "terverifikasi",
+    "survey_responses_count": 22,
+    "partner_count": 18,
+    "avg_score": 4.65,
+    "audience_relevance_pct": 95.45,
+    "expected": {
+      "portfolio": "demo",
+      "data_status": "terverifikasi",
+      "relationship_passed": true,
+      "cost_status": "hemat_atau_sesuai",
+      "recommendation": "layak"
+    }
+  },
+  "DEMO-031": {
+    "code": "DEMO-031",
+    "name": "Simulasi Event Belum Final - Menunggu H+90 & Survei",
+    "type": "gathering_internal",
+    "goal": "sales",
+    "location": "Semarang",
+    "proposal_cost": 12000000.0,
+    "team_budget": 2500000.0,
+    "actual_participants": 45,
+    "valid_leads": 10,
+    "actual_team_cost": 2400000.0,
+    "revenue": null,
+    "days_offset": -45,
+    "verification_status": "belum_diperiksa",
+    "survey_responses_count": 10,
+    "expected": {
+      "portfolio": "demo",
+      "data_status": "belum_jatuh_tempo",
+      "sales_passed": false,
+      "recommendation": "belum_final"
+    }
+  }
+}

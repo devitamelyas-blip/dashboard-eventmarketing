@@ -1,0 +1,62 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: devon_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - devon_network
+    depends_on:
+      - postgres
+      - mailpit
+
+  nginx:
+    image: nginx:alpine
+    container_name: devon_nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - devon_network
+    depends_on:
+      - app
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: devon_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-devon}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - devon_pgdata:/var/lib/postgresql/data
+    networks:
+      - devon_network
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: devon_mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - devon_network
+
+networks:
+  devon_network:
+    driver: bridge
+
+volumes:
+  devon_pgdata:
+    driver: local
