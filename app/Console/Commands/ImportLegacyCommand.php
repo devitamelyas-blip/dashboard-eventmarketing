@@ -22,7 +22,7 @@ class ImportLegacyCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'devon:import-legacy {file : Path ke file CSV legacy} {--dry-run : Jalankan simulasi tanpa menyimpan ke database}';
+    protected $signature = 'events:import-legacy {file : Path ke file CSV legacy} {--dry-run : Jalankan simulasi tanpa menyimpan ke database}';
 
     /**
      * The console command description.

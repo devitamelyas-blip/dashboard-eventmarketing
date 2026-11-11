@@ -57,7 +57,9 @@ const submit = () => {
                             </span>
                         </div>
                     </div>
-                    <img src="/images/kencana-logo.png" alt="Kencana" class="h-8 w-auto object-contain shrink-0 hidden sm:block" />
+                    <div class="shrink-0 bg-white p-1 rounded-lg border border-gray-100 shadow-2xs">
+                        <img src="/images/kencana-logo.png" alt="PT Kencana Maju Bersama" class="h-7 sm:h-9 w-auto object-contain" />
+                    </div>
                 </div>
 
                 <!-- Pemberitahuan Privasi -->

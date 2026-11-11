@@ -21,12 +21,6 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        // 1. Portfolio Filter (default: operational)
-        $selectedPortfolio = $request->input('portfolio', EventPortfolio::OPERATIONAL->value);
-        if (!in_array($selectedPortfolio, ['operational', 'demo', 'uat', 'all'])) {
-            $selectedPortfolio = EventPortfolio::OPERATIONAL->value;
-        }
-
         // Base Query scoped to role and portfolio
         $baseQuery = Event::query();
 
@@ -34,14 +28,24 @@ class DashboardController extends Controller
             $baseQuery->where('branch_id', $user->branch_id);
         }
 
+        // 1. Portfolio Filter (default: operational if operational events exist, otherwise 'all')
+        $selectedPortfolio = $request->input('portfolio');
+        if (!$selectedPortfolio || !in_array($selectedPortfolio, ['operational', 'demo', 'uat', 'all'])) {
+            $hasOperational = (clone $baseQuery)
+                ->where('code', 'not like', 'DEMO-%')
+                ->where('code', 'not like', 'UAT-%')
+                ->exists();
+            $selectedPortfolio = $hasOperational ? EventPortfolio::OPERATIONAL->value : 'all';
+        }
+
         $applyPortfolioFilter = function ($query) use ($selectedPortfolio) {
             if ($selectedPortfolio === 'operational') {
                 $query->where('code', 'not like', 'DEMO-%')
-                      ->where('code', 'not like', 'DEVON-UAT-%');
+                      ->where('code', 'not like', 'UAT-%');
             } elseif ($selectedPortfolio === 'demo') {
                 $query->where('code', 'like', 'DEMO-%');
             } elseif ($selectedPortfolio === 'uat') {
-                $query->where('code', 'like', 'DEVON-UAT-%');
+                $query->where('code', 'like', 'UAT-%');
             }
         };
 

@@ -151,8 +151,8 @@ test('proposal cost and team budget reject Rp prefix and text formatting', funct
 test('portfolio is correctly computed from event code prefix', function () {
     expect(EventPortfolio::fromCode('DEMO-001'))->toBe(EventPortfolio::DEMO);
     expect(EventPortfolio::fromCode('demo-gath-01'))->toBe(EventPortfolio::DEMO);
-    expect(EventPortfolio::fromCode('DEVON-UAT-001'))->toBe(EventPortfolio::UAT);
-    expect(EventPortfolio::fromCode('devon-uat-test'))->toBe(EventPortfolio::UAT);
+    expect(EventPortfolio::fromCode('UAT-001'))->toBe(EventPortfolio::UAT);
+    expect(EventPortfolio::fromCode('uat-test'))->toBe(EventPortfolio::UAT);
     expect(EventPortfolio::fromCode('SBY-2026-001'))->toBe(EventPortfolio::OPERATIONAL);
     expect(EventPortfolio::fromCode('JKT-GATH-01'))->toBe(EventPortfolio::OPERATIONAL);
 });

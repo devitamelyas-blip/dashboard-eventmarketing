@@ -85,7 +85,7 @@ test('anonymize respondents command anonymizes old pii while preserving survey k
         ],
     ]);
 
-    $this->artisan('devon:anonymize-respondents', ['--days' => 365])
+    $this->artisan('events:anonymize-respondents', ['--days' => 365])
         ->assertSuccessful();
 
     $oldRespondent->refresh();
@@ -109,7 +109,7 @@ test('anonymize respondents command anonymizes old pii while preserving survey k
 });
 
 test('import legacy command imports valid rows and reports corrupt rows', function () {
-    $tempCsv = tempnam(sys_get_temp_dir(), 'devon_test_') . '.csv';
+    $tempCsv = tempnam(sys_get_temp_dir(), 'event_test_') . '.csv';
 
     $csvContent = implode("\n", [
         'code,name,type,event_date,branch,location,pic_name,goal,theme_product,target_participants,target_leads,proposal_cost,team_budget,actual_participants,valid_leads,actual_team_cost,revenue,verification_status',
@@ -122,7 +122,7 @@ test('import legacy command imports valid rows and reports corrupt rows', functi
     File::put($tempCsv, $csvContent);
 
     // 1. Dry run test
-    $this->artisan('devon:import-legacy', [
+    $this->artisan('events:import-legacy', [
         'file' => $tempCsv,
         '--dry-run' => true,
     ])->assertSuccessful();
@@ -131,7 +131,7 @@ test('import legacy command imports valid rows and reports corrupt rows', functi
     expect(Event::where('code', 'KMB-LEG-001')->exists())->toBeFalse();
 
     // 2. Real import test
-    $this->artisan('devon:import-legacy', [
+    $this->artisan('events:import-legacy', [
         'file' => $tempCsv,
     ])->assertSuccessful();
 

@@ -310,7 +310,7 @@ test('submitting report or sales update sends notification email to marketing', 
     });
 });
 
-test('artisan devon:remind-h90 sends email reminder to pic for overdue sales updates', function () {
+test('artisan events:remind-h90 sends email reminder to pic for overdue sales updates', function () {
     Mail::fake();
 
     $branch = Branch::first();
@@ -357,7 +357,7 @@ test('artisan devon:remind-h90 sends email reminder to pic for overdue sales upd
         'verification_status' => VerificationStatus::BELUM_DIPERIKSA,
     ]);
 
-    $this->artisan('devon:remind-h90')->assertSuccessful();
+    $this->artisan('events:remind-h90')->assertSuccessful();
 
     // Only overdue event should trigger reminder mail
     Mail::assertSent(SalesUpdateReminderMail::class, function ($mail) use ($eventOverdue) {

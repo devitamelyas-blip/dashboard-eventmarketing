@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "devon/event-marketing-platform",
+    "name": "kencana/event-marketing-platform",
     "type": "project",
     "description": "Enterprise Event Marketing & Evaluation Management Platform built with Laravel 12, Inertia.js, and Vue 3",
     "keywords": ["laravel", "inertia", "vue", "event-marketing", "evaluation", "dashboard"],

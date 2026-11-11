@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
@@ -52,6 +52,16 @@ const branch_id = ref(props.filters.branch_id || '');
 const goal = ref(props.filters.goal || '');
 const verification_status = ref(props.filters.verification_status || '');
 const portfolio = ref(props.filters.portfolio || '');
+
+const exportUrl = computed(() => {
+    return route('events.export', {
+        search: search.value || undefined,
+        branch_id: branch_id.value || undefined,
+        goal: goal.value || undefined,
+        verification_status: verification_status.value || undefined,
+        portfolio: portfolio.value || undefined,
+    });
+});
 
 const applyFilters = () => {
     router.get(route('events.index'), {
@@ -107,18 +117,31 @@ const formatRupiah = (val) => {
                     </p>
                 </div>
 
-                <div v-if="canCreate">
-                    <Link :href="route('events.create')">
-                        <button
-                            type="button"
-                            class="inline-flex items-center px-4 py-2 bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-bold rounded-md shadow-xs transition"
-                        >
-                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            Ajukan Event Baru
-                        </button>
-                    </Link>
+                <div class="flex items-center gap-2">
+                    <a
+                        :href="exportUrl"
+                        class="inline-flex items-center px-3.5 py-2 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold rounded-md border border-gray-300 shadow-2xs transition"
+                        title="Unduh data tabel dalam format CSV kompatibel Excel"
+                    >
+                        <svg class="w-4 h-4 mr-1.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Ekspor CSV
+                    </a>
+
+                    <div v-if="canCreate">
+                        <Link :href="route('events.create')">
+                            <button
+                                type="button"
+                                class="inline-flex items-center px-4 py-2 bg-[#DC2626] hover:bg-[#B91C1C] text-white text-xs font-bold rounded-md shadow-xs transition"
+                            >
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Ajukan Event Baru
+                            </button>
+                        </Link>
+                    </div>
                 </div>
             </div>
 
@@ -418,19 +441,23 @@ const formatRupiah = (val) => {
                         Menampilkan <strong class="text-gray-800">{{ events.from }}</strong> s/d <strong class="text-gray-800">{{ events.to }}</strong> dari total <strong class="text-gray-800">{{ events.total }}</strong> event
                     </div>
                     <div class="flex gap-1 flex-wrap">
-                        <component
-                            :is="link.url ? 'Link' : 'span'"
-                            v-for="(link, index) in events.links"
-                            :key="index"
-                            :href="link.url || '#'"
-                            v-html="link.label"
-                            class="px-2.5 py-1 text-xs rounded border transition"
-                            :class="{
-                                'bg-[#172B4D] text-white border-[#172B4D] font-bold': link.active,
-                                'bg-white text-gray-700 border-gray-300 hover:bg-gray-100': !link.active && link.url,
-                                'text-gray-300 border-gray-200 cursor-not-allowed': !link.url
-                            }"
-                        />
+                        <template v-for="(link, index) in events.links" :key="index">
+                            <Link
+                                v-if="link.url"
+                                :href="link.url"
+                                v-html="link.label"
+                                class="px-2.5 py-1 text-xs rounded border transition"
+                                :class="{
+                                    'bg-[#172B4D] text-white border-[#172B4D] font-bold': link.active,
+                                    'bg-white text-gray-700 border-gray-300 hover:bg-gray-100': !link.active
+                                }"
+                            />
+                            <span
+                                v-else
+                                v-html="link.label"
+                                class="px-2.5 py-1 text-xs rounded border text-gray-300 border-gray-200 cursor-not-allowed"
+                            />
+                        </template>
                     </div>
                 </div>
             </div>

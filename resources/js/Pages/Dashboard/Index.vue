@@ -206,7 +206,7 @@ const budgetRealizationPct = computed(() => {
             </div>
 
             <!-- B. KPI OVERVIEW CARDS (6 COMPACT CARDS) -->
-            <div id="budget-monitoring" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div id="budget-monitoring" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 scroll-mt-24">
                 <!-- KPI 1: Total Event -->
                 <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-card">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">
@@ -287,7 +287,7 @@ const budgetRealizationPct = computed(() => {
             </div>
 
             <!-- C. EVENT PERFORMANCE ANALYTICS SECTION -->
-            <div id="analytics-section" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div id="analytics-section" class="grid grid-cols-1 md:grid-cols-3 gap-4 scroll-mt-24">
                 <!-- Goal Distribution -->
                 <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-card">
                     <div class="flex items-center justify-between border-b border-gray-100 pb-2 mb-3">
@@ -506,7 +506,8 @@ const budgetRealizationPct = computed(() => {
             </div>
 
             <!-- E. INTERACTIVE EVENT REVIEWER & EVALUATION SUMMARY -->
-            <div v-if="selectedEvent" id="evaluation-summary" class="bg-white rounded-lg border border-gray-200 shadow-card p-5 space-y-6">
+            <div id="evaluation-summary" class="scroll-mt-24 space-y-6">
+                <div v-if="selectedEvent" class="bg-white rounded-lg border border-gray-200 shadow-card p-5 space-y-6">
                 <!-- Event Selector Toolbar -->
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b border-gray-200 pb-4">
                     <div>
@@ -518,18 +519,32 @@ const budgetRealizationPct = computed(() => {
                         </h2>
                     </div>
 
-                    <!-- Dropdown Event Switcher -->
-                    <div class="relative min-w-[280px]">
-                        <button
-                            type="button"
-                            @click="isEventDropdownOpen = !isEventDropdownOpen"
-                            class="w-full bg-[#F4F6F9] border border-gray-300 rounded-md px-3 py-1.5 text-xs text-left font-semibold flex items-center justify-between text-gray-800 hover:bg-gray-100 transition"
+                    <div class="flex items-center gap-2">
+                        <!-- Print A4 Button -->
+                        <a
+                            :href="route('dashboard.print', selectedEvent.id)"
+                            target="_blank"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-50 text-gray-700 rounded-md text-xs font-semibold transition border border-gray-300 shadow-2xs hover:shadow-xs"
+                            title="Buka Lembar Cetak Eksekutif A4 Landscape"
                         >
-                            <span class="truncate font-mono">{{ selectedEvent.code }} — {{ selectedEvent.name }}</span>
-                            <svg class="w-4 h-4 ml-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                             </svg>
-                        </button>
+                            <span class="hidden sm:inline">Cetak A4</span>
+                        </a>
+
+                        <!-- Dropdown Event Switcher -->
+                        <div class="relative min-w-[260px] sm:min-w-[300px]">
+                            <button
+                                type="button"
+                                @click="isEventDropdownOpen = !isEventDropdownOpen"
+                                class="w-full bg-[#F4F6F9] border border-gray-300 rounded-md px-3 py-1.5 text-xs text-left font-semibold flex items-center justify-between text-gray-800 hover:bg-gray-100 transition shadow-2xs"
+                            >
+                                <span class="truncate font-mono">{{ selectedEvent.code }} — {{ selectedEvent.name }}</span>
+                                <svg class="w-4 h-4 ml-2 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
 
                         <div
                             v-if="isEventDropdownOpen"
@@ -557,6 +572,7 @@ const budgetRealizationPct = computed(() => {
                             </button>
                         </div>
                     </div>
+                </div>
                 </div>
 
                 <!-- 1. Identitas Event (Grid 4 Kolom) -->
@@ -870,6 +886,18 @@ const budgetRealizationPct = computed(() => {
                     </div>
                 </div>
             </div>
+            <div v-else class="bg-white rounded-lg border border-gray-200 shadow-card p-8 text-center space-y-3">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-50 text-red-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-sm font-bold text-gray-900">Lembar Evaluasi Event & Rekomendasi</h3>
+                <p class="text-xs text-gray-500 max-w-md mx-auto">
+                    Belum ada event yang dipilih. Silakan pilih salah satu event pada tabel di atas untuk memuat lembar evaluasi lengkap.
+                </p>
+            </div>
         </div>
-    </AuthenticatedLayout>
+    </div>
+</AuthenticatedLayout>
 </template>

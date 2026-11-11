@@ -25,7 +25,7 @@ enum EventPortfolio: string
             return self::DEMO;
         }
 
-        if (str_starts_with($normalized, 'DEVON-UAT-')) {
+        if (str_starts_with($normalized, 'UAT-')) {
             return self::UAT;
         }
 

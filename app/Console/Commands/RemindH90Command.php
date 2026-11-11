@@ -15,7 +15,7 @@ class RemindH90Command extends Command
      *
      * @var string
      */
-    protected $signature = 'devon:remind-h90';
+    protected $signature = 'events:remind-h90';
 
     /**
      * The console command description.

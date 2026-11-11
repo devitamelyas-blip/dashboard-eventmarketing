@@ -35,7 +35,7 @@ class UserController extends Controller
             ]);
 
         $branches = Branch::orderBy('name')->get(['id', 'name', 'code']);
-        $roles = Role::orderBy('name')->get(['id', 'name']);
+        $roles = Role::orderBy('name')->pluck('name');
 
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectorDecisionController;
@@ -35,8 +37,9 @@ Route::get('/dashboard/print/{event}', [DashboardController::class, 'print'])->m
 
 // Internal Authenticated Routes
 Route::middleware('auth')->group(function () {
-    // Events - Pendaftaran & Rencana Event
+    // Events - Pendaftaran, Rencana Event & Ekspor Data
     Route::get('/events', [EventController::class, 'index'])->name('events.index');
+    Route::get('/events/export', [EventController::class, 'export'])->name('events.export');
     Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
 
@@ -65,12 +68,22 @@ Route::middleware(['auth', 'role:marketing|admin'])->prefix('marketing')->name('
     Route::get('/links/{event}/qr', [MarketingLinkController::class, 'downloadQr'])->name('links.downloadQr');
 });
 
-// Admin User & Role Management
+// Admin Management (Users, Branches, Activity Logs)
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Kelola Pengguna
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    // Kelola Kantor Cabang
+    Route::get('/branches', [BranchController::class, 'index'])->name('branches.index');
+    Route::post('/branches', [BranchController::class, 'store'])->name('branches.store');
+    Route::put('/branches/{branch}', [BranchController::class, 'update'])->name('branches.update');
+    Route::delete('/branches/{branch}', [BranchController::class, 'destroy'])->name('branches.destroy');
+
+    // Audit Trail / Log Aktivitas
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
 });
 
 require __DIR__.'/auth.php';

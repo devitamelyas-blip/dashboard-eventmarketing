@@ -1,18 +1,18 @@
-# Project Devon — Spesifikasi Teknis & Aturan Bisnis
+# Sistem Evaluasi Event Marketing — Spesifikasi Teknis & Aturan Bisnis
 
-Dokumen ini mendokumentasikan keputusan arsitektural, spesifikasi teknis, dan aturan bisnis yang diterapkan pada sistem platform evaluasi event marketing PT Kencana Maju Bersama.
+Dokumen ini mendokumentasikan keputusan arsitektural, spesifikasi teknis, dan aturan bisnis yang diterapkan pada platform evaluasi event marketing PT Kencana Maju Bersama.
 
 ---
 
 ## 1. Kode Event & Penomoran
 - PIC cabang menginput kode event pada form pengajuan (dinormalisasi otomatis oleh sistem: *uppercase* & *trimmed*).
 - Kode event bersifat unik (*unique constraint*) di tingkat database. Apabila kode telah terdaftar sebelumnya, validasi form akan menolak pengajuan dengan pesan kesalahan spesifik.
-- Format kode mendukung prefix identifikasi lingkungan/lingkup pengujian (misal: `DEMO-`, `DEVON-UAT-`, atau format operasional cabang).
+- Format kode mendukung prefix identifikasi lingkungan/lingkup pengujian (misal: `DEMO-`, `UAT-`, atau format operasional cabang).
 
 ## 2. Portofolio & Kategori Event
 - Sistem mendeteksi portofolio event secara otomatis berdasarkan prefix kode event:
   - Dimulai dengan `DEMO-` $\rightarrow$ `EventPortfolio::DEMO`
-  - Dimulai dengan `DEVON-UAT-` $\rightarrow$ `EventPortfolio::UAT`
+  - Dimulai dengan `UAT-` $\rightarrow$ `EventPortfolio::UAT`
   - Pola lainnya $\rightarrow$ `EventPortfolio::OPERATIONAL`
 - Event dengan portofolio Demo atau UAT diproteksi agar tidak diverifikasi sebagai data operasional nyata (pencegahan logic di tingkat service & controller verifikasi).
 

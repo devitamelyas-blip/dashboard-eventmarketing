@@ -18,16 +18,15 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EventController extends Controller
 {
     /**
-     * Display a listing of the events (Sheet 01 equivalent).
+     * Build base query for events list and export with all filters applied.
      */
-    public function index(Request $request): Response
+    protected function buildEventsQuery(Request $request)
     {
-        Gate::authorize('viewAny', Event::class);
-
         $user = $request->user();
         $query = Event::with(['branch', 'picUser', 'report', 'salesUpdate']);
 
@@ -64,12 +63,25 @@ class EventController extends Controller
             if ($portfolio === EventPortfolio::DEMO->value) {
                 $query->where('code', 'like', 'DEMO-%');
             } elseif ($portfolio === EventPortfolio::UAT->value) {
-                $query->where('code', 'like', 'DEVON-UAT-%');
+                $query->where('code', 'like', 'UAT-%');
             } elseif ($portfolio === EventPortfolio::OPERATIONAL->value) {
                 $query->where('code', 'not like', 'DEMO-%')
-                      ->where('code', 'not like', 'DEVON-UAT-%');
+                      ->where('code', 'not like', 'UAT-%');
             }
         }
+
+        return $query;
+    }
+
+    /**
+     * Display a listing of the events.
+     */
+    public function index(Request $request): Response
+    {
+        Gate::authorize('viewAny', Event::class);
+
+        $user = $request->user();
+        $query = $this->buildEventsQuery($request);
 
         $events = $query->latest('event_date')
             ->paginate(15)
@@ -129,6 +141,100 @@ class EventController extends Controller
             'verificationStatuses' => array_map(fn ($v) => ['value' => $v->value, 'label' => $v->label()], VerificationStatus::cases()),
             'portfolios' => array_map(fn ($p) => ['value' => $p->value, 'label' => $p->label()], EventPortfolio::cases()),
         ]);
+    }
+
+    /**
+     * Export events list as CSV compatible with Excel.
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        Gate::authorize('viewAny', Event::class);
+
+        $query = $this->buildEventsQuery($request);
+        $events = $query->latest('event_date')->get();
+
+        $filename = 'rekap_event_marketing_' . date('Ymd_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        return response()->stream(function () use ($events) {
+            $handle = fopen('php://output', 'w');
+
+            // UTF-8 BOM for Microsoft Excel compatibility
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Header columns
+            fputcsv($handle, [
+                'Kode Event',
+                'Nama Event',
+                'Jenis Event',
+                'Tanggal Event',
+                'Cabang',
+                'Lokasi',
+                'PIC',
+                'Email PIC',
+                'Sasaran Utama (Goal)',
+                'Portofolio',
+                'Tema / Produk',
+                'Target Peserta',
+                'Target Lead',
+                'Biaya Proposal (Rp)',
+                'Budget Tim (Rp)',
+                'Total Rencana Anggaran (Rp)',
+                'Biaya Aktual Tim (Rp)',
+                'Total Biaya Aktual (Rp)',
+                'Peserta Aktual',
+                'Lead Valid',
+                'Omzet H+90 (Rp)',
+                'Status Verifikasi',
+                'Catatan Verifikasi',
+                'Keputusan Direksi',
+                'Catatan Direksi',
+            ]);
+
+            foreach ($events as $event) {
+                $actualTeamCost = $event->report?->actual_team_cost !== null ? (float) $event->report->actual_team_cost : null;
+                $totalActualCost = $actualTeamCost !== null ? ((float) $event->proposal_cost + $actualTeamCost) : null;
+                $totalBudget = (float) $event->proposal_cost + (float) $event->team_budget;
+                $revenue = $event->salesUpdate?->revenue !== null ? (float) $event->salesUpdate->revenue : null;
+
+                fputcsv($handle, [
+                    $event->code,
+                    $event->name,
+                    $event->type->label(),
+                    $event->event_date->format('d/m/Y'),
+                    $event->branch?->name ?? '-',
+                    $event->location,
+                    $event->pic_name,
+                    $event->submitter_email ?? $event->picUser?->email ?? '-',
+                    $event->goal->label(),
+                    $event->portfolio->label(),
+                    $event->theme_product ?? '-',
+                    $event->target_participants,
+                    $event->target_leads,
+                    $event->proposal_cost,
+                    $event->team_budget,
+                    $totalBudget,
+                    $actualTeamCost ?? '',
+                    $totalActualCost ?? '',
+                    $event->report?->actual_participants ?? '',
+                    $event->report?->valid_leads ?? '',
+                    $revenue ?? '',
+                    $event->verification_status->label(),
+                    $event->verification_note ?? '',
+                    $event->director_decision ? ucfirst($event->director_decision) : 'Belum Diputuskan',
+                    $event->director_note ?? '',
+                ]);
+            }
+
+            fclose($handle);
+        }, 200, $headers);
     }
 
     /**

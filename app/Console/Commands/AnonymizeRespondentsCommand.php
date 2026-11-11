@@ -12,7 +12,7 @@ class AnonymizeRespondentsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'devon:anonymize-respondents {--days=365 : Batas retensi usia data dalam hari}';
+    protected $signature = 'events:anonymize-respondents {--days=365 : Batas retensi usia data dalam hari}';
 
     /**
      * The console command description.

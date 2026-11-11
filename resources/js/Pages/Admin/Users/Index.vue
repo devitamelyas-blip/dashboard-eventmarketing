@@ -7,7 +7,7 @@ import TextInput from '@/Components/TextInput.vue';
 import InputError from '@/Components/InputError.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DangerButton from '@/Components/DangerButton.vue';
-import { Head, useForm, router } from '@inertiajs/vue3';
+import { Head, useForm, router, Link } from '@inertiajs/vue3';
 
 const props = defineProps({
     users: Object,
@@ -219,19 +219,23 @@ const confirmDelete = () => {
                         Menampilkan <strong class="text-gray-800">{{ users.from }}</strong> s/d <strong class="text-gray-800">{{ users.to }}</strong> dari total <strong class="text-gray-800">{{ users.total }}</strong> pengguna
                     </div>
                     <div class="flex gap-1 flex-wrap">
-                        <component
-                            :is="link.url ? 'Link' : 'span'"
-                            v-for="(link, index) in users.links"
-                            :key="index"
-                            :href="link.url || '#'"
-                            v-html="link.label"
-                            class="px-2.5 py-1 text-xs rounded border transition"
-                            :class="{
-                                'bg-[#172B4D] text-white border-[#172B4D] font-bold': link.active,
-                                'bg-white text-gray-700 border-gray-300 hover:bg-gray-100': !link.active && link.url,
-                                'text-gray-300 border-gray-200 cursor-not-allowed': !link.url
-                            }"
-                        />
+                        <template v-for="(link, index) in users.links" :key="index">
+                            <Link
+                                v-if="link.url"
+                                :href="link.url"
+                                v-html="link.label"
+                                class="px-2.5 py-1 text-xs rounded border transition"
+                                :class="{
+                                    'bg-[#172B4D] text-white border-[#172B4D] font-bold': link.active,
+                                    'bg-white text-gray-700 border-gray-300 hover:bg-gray-100': !link.active
+                                }"
+                            />
+                            <span
+                                v-else
+                                v-html="link.label"
+                                class="px-2.5 py-1 text-xs rounded border text-gray-300 border-gray-200 cursor-not-allowed"
+                            />
+                        </template>
                     </div>
                 </div>
             </div>
@@ -260,7 +264,9 @@ const confirmDelete = () => {
                     <div>
                         <InputLabel for="create_role" value="Role Pengguna" class="text-xs font-semibold" />
                         <select id="create_role" v-model="createForm.role" class="mt-1 block w-full rounded border-gray-300 text-xs py-1.5 focus:border-[#172B4D]" required>
-                            <option v-for="r in roles" :key="r" :value="r">{{ r.toUpperCase() }}</option>
+                            <option v-for="r in roles" :key="typeof r === 'object' ? r.name : r" :value="typeof r === 'object' ? r.name : r">
+                                {{ (typeof r === 'object' ? r.name : r).toUpperCase() }}
+                            </option>
                         </select>
                         <InputError :message="createForm.errors.role" class="mt-1" />
                     </div>
@@ -310,7 +316,9 @@ const confirmDelete = () => {
                     <div>
                         <InputLabel for="edit_role" value="Role Pengguna" class="text-xs font-semibold" />
                         <select id="edit_role" v-model="editForm.role" class="mt-1 block w-full rounded border-gray-300 text-xs py-1.5 focus:border-[#172B4D]" required>
-                            <option v-for="r in roles" :key="r" :value="r">{{ r.toUpperCase() }}</option>
+                            <option v-for="r in roles" :key="typeof r === 'object' ? r.name : r" :value="typeof r === 'object' ? r.name : r">
+                                {{ (typeof r === 'object' ? r.name : r).toUpperCase() }}
+                            </option>
                         </select>
                         <InputError :message="editForm.errors.role" class="mt-1" />
                     </div>

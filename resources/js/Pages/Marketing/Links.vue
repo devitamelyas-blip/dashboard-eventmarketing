@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, Link } from '@inertiajs/vue3';
 
 const props = defineProps({
     events: Object,
@@ -230,6 +230,32 @@ const copyToClipboard = (text, key) => {
 
                 <div v-if="events.data.length === 0" class="p-8 text-center text-gray-400 bg-white rounded-lg border border-gray-200">
                     Tidak ada event yang ditemukan.
+                </div>
+
+                <!-- Pagination Links -->
+                <div v-if="events.links && events.links.length > 3" class="p-4 bg-white rounded-lg border border-gray-200 shadow-2xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+                    <div class="text-gray-500">
+                        Menampilkan <strong class="text-gray-800">{{ events.from }}</strong> s/d <strong class="text-gray-800">{{ events.to }}</strong> dari total <strong class="text-gray-800">{{ events.total }}</strong> event
+                    </div>
+                    <div class="flex gap-1 flex-wrap">
+                        <template v-for="(link, index) in events.links" :key="index">
+                            <Link
+                                v-if="link.url"
+                                :href="link.url"
+                                v-html="link.label"
+                                class="px-2.5 py-1 text-xs rounded border transition"
+                                :class="{
+                                    'bg-[#172B4D] text-white border-[#172B4D] font-bold': link.active,
+                                    'bg-white text-gray-700 border-gray-300 hover:bg-gray-100': !link.active
+                                }"
+                            />
+                            <span
+                                v-else
+                                v-html="link.label"
+                                class="px-2.5 py-1 text-xs rounded border text-gray-300 border-gray-200 cursor-not-allowed"
+                            />
+                        </template>
+                    </div>
                 </div>
             </div>
         </div>

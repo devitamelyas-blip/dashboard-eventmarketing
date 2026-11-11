@@ -1,11 +1,11 @@
-# Project Devon — Event Marketing & Evaluation Management Platform
+# Event Marketing — Platform Evaluasi & Manajemen Event
 
 [![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=flat-square&logo=laravel)](https://laravel.com)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.x-4FC08D?style=flat-square&logo=vue.js)](https://vuejs.org)
 [![Inertia.js](https://img.shields.io/badge/Inertia.js-2.x-9553E9?style=flat-square&logo=inertia)](https://inertiajs.com)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com)
 [![PHP](https://img.shields.io/badge/PHP-8.3%2B-777BB4?style=flat-square&logo=php)](https://php.net)
-[![Pest Tests](https://img.shields.io/badge/Tests-Pest%20PHP%20(117%20Passed)-brightgreen?style=flat-square&logo=pest)](https://pestphp.com)
+[![Pest Tests](https://img.shields.io/badge/Tests-Pest%20PHP%20(128%20Passed)-brightgreen?style=flat-square&logo=pest)](https://pestphp.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
 An enterprise event marketing management and automated post-event evaluation platform designed for multi-branch organizations. The platform streamlines event proposals, attendee feedback collection via secure QR-code surveys, automated KPI evaluation engines (Sales ROI, Brand Awareness, and Relationship), and executive decision workflows with complete branch-level data isolation.
@@ -40,8 +40,8 @@ Didukung oleh `spatie/laravel-permission` dengan 4 tingkatan akses:
 - **PIC (Cabang)**: Akses terisolasi khusus event cabang masing-masing (*branch data isolation policy*) untuk pendaftaran dan pelaporan kegiatan.
 
 ### 5. Enterprise Data Hardening & Privacy Compliance
-- **PII Anonymization (`devon:anonymize-respondents`)**: Artisan command terjadwal untuk menyamarkan data identitas sensitif responden lawas sesuai prinsip retensi privasi tanpa merusak integritas KPI historis.
-- **H+90 Reminder Automation (`devon:remind-h90`)**: Pengingat otomatis via email kepada PIC ketika batas waktu rekonsiliasi omzet telah jatuh tempo.
+- **PII Anonymization (`events:anonymize-respondents`)**: Artisan command terjadwal untuk menyamarkan data identitas sensitif responden lawas sesuai prinsip retensi privasi tanpa merusak integritas KPI historis.
+- **H+90 Reminder Automation (`events:remind-h90`)**: Pengingat otomatis via email kepada PIC ketika batas waktu rekonsiliasi omzet telah jatuh tempo.
 - **Audit Trail**: Pencatatan histori aktivitas perubahan status dan verifikasi menggunakan `spatie/laravel-activitylog`.
 - **Security Headers**: Dilengkapi middleware pengamanan HTTP (*X-Frame-Options*, *X-Content-Type-Options*, *Referrer-Policy*).
 
@@ -183,8 +183,12 @@ Hasil uji otomatis:
   PASS  Tests\Feature\Console\HardeningAndConsoleCommandsTest
   PASS  Tests\Feature\Verification\VerificationAndDecisionTest
 
-  Tests:    117 passed (512 assertions)
-  Duration: ~8.0s
+  PASS  Tests\Feature\Admin\BranchManagementTest
+  PASS  Tests\Feature\Admin\ActivityLogTest
+  PASS  Tests\Feature\Events\EventExportTest
+
+  Tests:    128 passed (560 assertions)
+  Duration: ~8.5s
 ```
 
 ---
