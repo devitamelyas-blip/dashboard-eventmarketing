@@ -80,6 +80,7 @@ class StoreEventRequest extends FormRequest
             'estimated_relevance_basis' => ['nullable', 'string', 'max:1000'],
             'proposal_cost' => ['required', $currencyTextCheck, 'numeric', 'min:0'],
             'team_budget' => ['required', $currencyTextCheck, 'numeric', 'min:0'],
+            'proposal_doc' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
         ];
     }
 

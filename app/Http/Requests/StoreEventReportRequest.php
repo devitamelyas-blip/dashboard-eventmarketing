@@ -54,6 +54,8 @@ class StoreEventReportRequest extends FormRequest
             'actual_participants' => ['nullable', 'integer', 'min:0'],
             'valid_leads' => ['nullable', 'integer', 'min:0'],
             'actual_team_cost' => ['nullable', $currencyTextCheck, 'numeric', 'min:0'],
+            'attendance_doc' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'documentation_doc' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];
     }

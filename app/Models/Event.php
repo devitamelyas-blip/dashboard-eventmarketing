@@ -37,6 +37,7 @@ class Event extends Model
         'estimated_relevance_basis',
         'proposal_cost',
         'team_budget',
+        'proposal_doc_path',
         'verification_status',
         'verification_note',
         'director_decision',

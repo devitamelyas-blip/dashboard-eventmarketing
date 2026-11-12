@@ -32,6 +32,17 @@ class EventVerificationController extends Controller
         $event->verification_note = $request->input('verification_note');
         $event->save();
 
+        // Send in-app notification to PIC
+        if ($event->picUser) {
+            $isCorrection = $event->verification_status === VerificationStatus::PERLU_KOREKSI;
+            $event->picUser->notify(new \App\Notifications\EventActivityNotification(
+                title: 'Status Verifikasi Event: ' . $event->verification_status->label(),
+                message: "Event [{$event->code}] {$event->name} berstatus {$event->verification_status->label()}." . ($event->verification_note ? " Catatan: {$event->verification_note}" : ''),
+                url: route('events.index', ['search' => $event->code]),
+                type: $isCorrection ? 'warning' : 'success'
+            ));
+        }
+
         // Send correction required email to PIC if applicable
         if ($event->verification_status === VerificationStatus::PERLU_KOREKSI) {
             $email = $event->submitter_email ?? $event->picUser?->email;

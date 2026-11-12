@@ -119,6 +119,17 @@ const budgetRealizationPct = computed(() => {
     if (totalBudgetVal.value <= 0) return 0;
     return Math.min(Math.round((verifiedCostVal.value / totalBudgetVal.value) * 100), 100);
 });
+
+// Branch Performance Analytics
+const branchPerformance = computed(() => props.analytics?.branch_performance || []);
+const maxBranchBudget = computed(() => {
+    if (!branchPerformance.value.length) return 1;
+    const maxVal = Math.max(
+        ...branchPerformance.value.map(b => Math.max(Number(b.plan_budget) || 0, Number(b.actual_cost) || 0)),
+        1
+    );
+    return maxVal;
+});
 </script>
 
 <template>
@@ -376,6 +387,79 @@ const budgetRealizationPct = computed(() => {
                         <div class="flex items-center justify-between p-2 rounded bg-red-50/60 border border-red-100">
                             <span class="font-medium text-red-900">Perlu Koreksi:</span>
                             <span class="font-bold text-red-800">{{ kpis.correction_needed_count ?? 0 }} event</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- C.2 VISUAL ANALYTICS: PERFORMANSI ANGGARAN PER CABANG -->
+            <div v-if="branchPerformance.length > 0" class="bg-white rounded-lg border border-gray-200 p-5 shadow-card">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-gray-100 pb-3 mb-4">
+                    <div>
+                        <h2 class="text-xs font-black uppercase tracking-wider text-[#172B4D] flex items-center gap-2">
+                            <svg class="w-4 h-4 text-[#DC2626]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            Analisis Kinerja Anggaran: Alokasi Rencana vs Realisasi Cabang
+                        </h2>
+                        <p class="text-[11px] text-gray-500 mt-0.5">
+                            Perbandingan total anggaran proposal rencana vs realisasi biaya aktual yang telah tercatat per cabang
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-4 text-[11px] font-medium text-gray-600">
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-sm bg-slate-300"></span> Rencana Proposal
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-sm bg-emerald-600"></span> Realisasi Normal
+                        </span>
+                        <span class="inline-flex items-center gap-1.5">
+                            <span class="w-3 h-3 rounded-sm bg-red-600"></span> Over Budget
+                        </span>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div
+                        v-for="branch in branchPerformance"
+                        :key="branch.branch_name"
+                        class="space-y-1.5"
+                    >
+                        <div class="flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-gray-900">{{ branch.branch_name }}</span>
+                                <span class="text-[11px] text-gray-400 font-mono">({{ branch.total_events }} event)</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-[11px] font-mono">
+                                <span class="text-gray-500">
+                                    Rencana: <strong class="text-gray-800">{{ formatRupiah(branch.plan_budget) }}</strong>
+                                </span>
+                                <span class="text-gray-300">|</span>
+                                <span :class="branch.actual_cost > branch.plan_budget ? 'text-red-600 font-bold' : 'text-emerald-700 font-bold'">
+                                    Aktual: {{ formatRupiah(branch.actual_cost) }}
+                                    <span v-if="branch.plan_budget > 0" class="text-[10px] text-gray-400 font-normal">
+                                        ({{ Math.round((branch.actual_cost / branch.plan_budget) * 100) }}%)
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <!-- Plan bar -->
+                            <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden" title="Rencana Proposal">
+                                <div
+                                    class="bg-slate-300 h-2 rounded-full transition-all duration-500"
+                                    :style="{ width: `${Math.min(Math.round((branch.plan_budget / maxBranchBudget) * 100), 100)}%` }"
+                                ></div>
+                            </div>
+                            <!-- Actual bar -->
+                            <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden" title="Realisasi Aktual">
+                                <div
+                                    class="h-2 rounded-full transition-all duration-500"
+                                    :class="branch.actual_cost > branch.plan_budget ? 'bg-red-600' : 'bg-emerald-600'"
+                                    :style="{ width: `${Math.min(Math.round((branch.actual_cost / maxBranchBudget) * 100), 100)}%` }"
+                                ></div>
+                            </div>
                         </div>
                     </div>
                 </div>

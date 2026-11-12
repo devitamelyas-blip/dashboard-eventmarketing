@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -120,6 +121,9 @@ class EventController extends Controller
                 'has_report' => $event->report !== null,
                 'has_sales' => $event->salesUpdate !== null,
                 'has_invoice' => $event->salesUpdate?->invoice_path !== null,
+                'has_proposal_doc' => $event->proposal_doc_path !== null,
+                'has_attendance_doc' => $event->report?->attendance_doc_path !== null,
+                'has_documentation_doc' => $event->report?->documentation_doc_path !== null,
                 'can' => [
                     'view' => $user->can('view', $event),
                     'update' => $user->can('update', $event),
@@ -265,8 +269,14 @@ class EventController extends Controller
         $validated = $request->validated();
         $user = $request->user();
 
+        $proposalDocPath = null;
+        if ($request->hasFile('proposal_doc')) {
+            $proposalDocPath = $request->file('proposal_doc')->store('proposals', 'private');
+        }
+
         $event = Event::create([
             ...$validated,
+            'proposal_doc_path' => $proposalDocPath,
             'pic_user_id' => $user->id,
             'submitter_email' => $user->email,
             'verification_status' => VerificationStatus::BELUM_DIPERIKSA,
@@ -274,11 +284,17 @@ class EventController extends Controller
             'decision_stale_flag' => false,
         ]);
 
-        // Send email notification to marketing users
+        // Send email and in-app notification to marketing users
         try {
             $marketingUsers = User::role('marketing')->get();
             foreach ($marketingUsers as $marketing) {
                 Mail::to($marketing->email)->send(new NewEventSubmittedMail($event));
+                $marketing->notify(new \App\Notifications\EventActivityNotification(
+                    title: 'Pengajuan Event Baru',
+                    message: "Event [{$event->code}] {$event->name} diajukan oleh {$event->pic_name}.",
+                    url: route('events.index', ['search' => $event->code]),
+                    type: 'info'
+                ));
             }
         } catch (\Throwable $e) {
             // Silently log or continue if mail server is temporarily unreachable in dev
@@ -286,5 +302,19 @@ class EventController extends Controller
         }
 
         return redirect()->route('events.index')->with('success', "Event [{$event->code}] {$event->name} berhasil diajukan dan menunggu verifikasi Marketing.");
+    }
+
+    /**
+     * Download or view uploaded proposal document from private disk.
+     */
+    public function downloadProposal(Event $event): StreamedResponse
+    {
+        Gate::authorize('view', $event);
+
+        if (!$event->proposal_doc_path || !Storage::disk('private')->exists($event->proposal_doc_path)) {
+            abort(404, 'Dokumen proposal tidak ditemukan pada penyimpanan privat.');
+        }
+
+        return Storage::disk('private')->response($event->proposal_doc_path);
     }
 }

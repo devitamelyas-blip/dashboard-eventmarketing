@@ -9,6 +9,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventReportController;
 use App\Http\Controllers\EventVerificationController;
 use App\Http\Controllers\MarketingLinkController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SalesUpdateController;
 use App\Http\Controllers\SurveyController;
@@ -51,10 +52,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/{event}/sales', [SalesUpdateController::class, 'edit'])->name('events.sales.edit');
     Route::post('/events/{event}/sales', [SalesUpdateController::class, 'update'])->name('events.sales.update');
     Route::get('/events/{event}/invoice', [SalesUpdateController::class, 'downloadInvoice'])->name('events.invoice.download');
+    Route::get('/events/{event}/proposal', [EventController::class, 'downloadProposal'])->name('events.proposal.download');
+    Route::get('/events/{event}/attendance', [EventReportController::class, 'downloadAttendance'])->name('events.attendance.download');
+    Route::get('/events/{event}/documentation', [EventReportController::class, 'downloadDocumentation'])->name('events.documentation.download');
 
     // Events - Verifikasi Marketing & Keputusan Direksi
     Route::post('/events/{event}/verify', [EventVerificationController::class, 'update'])->name('events.verify');
     Route::post('/events/{event}/decision', [DirectorDecisionController::class, 'update'])->name('events.decision');
+
+    // In-App Notifications
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -66,6 +74,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:marketing|admin'])->prefix('marketing')->name('marketing.')->group(function () {
     Route::get('/links', [MarketingLinkController::class, 'index'])->name('links.index');
     Route::get('/links/{event}/qr', [MarketingLinkController::class, 'downloadQr'])->name('links.downloadQr');
+    Route::get('/links/{event}/survey-responses', [MarketingLinkController::class, 'exportSurveyResponses'])->name('links.surveyResponses');
 });
 
 // Admin Management (Users, Branches, Activity Logs)

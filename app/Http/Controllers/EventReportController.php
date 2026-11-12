@@ -10,8 +10,10 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EventReportController extends Controller
 {
@@ -49,6 +51,8 @@ class EventReportController extends Controller
                 'actual_participants' => $event->report->actual_participants,
                 'valid_leads' => $event->report->valid_leads,
                 'actual_team_cost' => $event->report->actual_team_cost !== null ? (float) $event->report->actual_team_cost : null,
+                'attendance_doc_path' => $event->report->attendance_doc_path ? true : false,
+                'documentation_doc_path' => $event->report->documentation_doc_path ? true : false,
                 'notes' => $event->report->notes,
             ] : null,
         ]);
@@ -60,6 +64,23 @@ class EventReportController extends Controller
     public function update(StoreEventReportRequest $request, Event $event): RedirectResponse
     {
         $validated = $request->validated();
+        $report = $event->report;
+
+        $attendancePath = $report?->attendance_doc_path;
+        if ($request->hasFile('attendance_doc')) {
+            if ($attendancePath && Storage::disk('private')->exists($attendancePath)) {
+                Storage::disk('private')->delete($attendancePath);
+            }
+            $attendancePath = $request->file('attendance_doc')->store('attendance', 'private');
+        }
+
+        $documentationPath = $report?->documentation_doc_path;
+        if ($request->hasFile('documentation_doc')) {
+            if ($documentationPath && Storage::disk('private')->exists($documentationPath)) {
+                Storage::disk('private')->delete($documentationPath);
+            }
+            $documentationPath = $request->file('documentation_doc')->store('documentation', 'private');
+        }
 
         $report = EventReport::updateOrCreate(
             ['event_id' => $event->id],
@@ -67,6 +88,8 @@ class EventReportController extends Controller
                 'actual_participants' => $validated['actual_participants'] ?? null,
                 'valid_leads' => $validated['valid_leads'] ?? null,
                 'actual_team_cost' => array_key_exists('actual_team_cost', $validated) ? $validated['actual_team_cost'] : null,
+                'attendance_doc_path' => $attendancePath,
+                'documentation_doc_path' => $documentationPath,
                 'notes' => $validated['notes'] ?? null,
             ]
         );
@@ -79,6 +102,12 @@ class EventReportController extends Controller
             $marketingUsers = User::role('marketing')->get();
             foreach ($marketingUsers as $marketing) {
                 Mail::to($marketing->email)->send(new PostEventReportSubmittedMail($event));
+                $marketing->notify(new \App\Notifications\EventActivityNotification(
+                    title: 'Laporan Pasca-Event Diisi',
+                    message: "Laporan realisasi untuk event [{$event->code}] {$event->name} telah disubmit.",
+                    url: route('events.index', ['search' => $event->code]),
+                    type: 'info'
+                ));
             }
         } catch (\Throwable $e) {
             report($e);
@@ -91,5 +120,35 @@ class EventReportController extends Controller
             ->log("Mengisi laporan pasca-event: {$event->code}");
 
         return redirect()->route('events.index')->with('success', "Laporan pasca-event [{$event->code}] berhasil disimpan.");
+    }
+
+    /**
+     * Download attendance list document from private disk.
+     */
+    public function downloadAttendance(Event $event): StreamedResponse
+    {
+        Gate::authorize('view', $event);
+
+        $report = $event->report;
+        if (!$report || !$report->attendance_doc_path || !Storage::disk('private')->exists($report->attendance_doc_path)) {
+            abort(404, 'Dokumen presensi tidak ditemukan pada penyimpanan privat.');
+        }
+
+        return Storage::disk('private')->response($report->attendance_doc_path);
+    }
+
+    /**
+     * Download documentation document from private disk.
+     */
+    public function downloadDocumentation(Event $event): StreamedResponse
+    {
+        Gate::authorize('view', $event);
+
+        $report = $event->report;
+        if (!$report || !$report->documentation_doc_path || !Storage::disk('private')->exists($report->documentation_doc_path)) {
+            abort(404, 'Dokumen dokumentasi acara tidak ditemukan pada penyimpanan privat.');
+        }
+
+        return Storage::disk('private')->response($report->documentation_doc_path);
     }
 }

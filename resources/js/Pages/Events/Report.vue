@@ -15,6 +15,8 @@ const form = useForm({
     actual_participants: props.report?.actual_participants ?? '',
     valid_leads: props.report?.valid_leads ?? '',
     actual_team_cost: props.report?.actual_team_cost ?? '',
+    attendance_doc: null,
+    documentation_doc: null,
     notes: props.report?.notes ?? '',
 });
 
@@ -170,6 +172,46 @@ const submit = () => {
                             <span class="font-bold text-gray-900 font-mono">{{ actualCostPreview }}</span>
                         </div>
                         <InputError :message="form.errors.actual_team_cost" class="mt-1" />
+                    </div>
+
+                    <!-- Upload Daftar Hadir / Presensi -->
+                    <div>
+                        <InputLabel for="attendance_doc" value="Daftar Hadir / Presensi Peserta (PDF / Gambar maks. 10MB)" class="text-xs font-semibold text-gray-700" />
+                        <input
+                            id="attendance_doc"
+                            type="file"
+                            accept=".pdf,image/*"
+                            @change="form.attendance_doc = $event.target.files[0]"
+                            class="mt-1 block w-full text-xs text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer border border-gray-300 rounded"
+                        />
+                        <div v-if="report?.attendance_doc_path" class="mt-1.5 flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
+                            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span>Dokumen presensi tersimpan:</span>
+                            <a :href="route('events.attendance.download', event.id)" target="_blank" class="text-blue-600 underline font-semibold hover:text-blue-800">
+                                Unduh / Lihat Berkas
+                            </a>
+                        </div>
+                        <InputError :message="form.errors.attendance_doc" class="mt-1" />
+                    </div>
+
+                    <!-- Upload Foto Dokumentasi Acara -->
+                    <div>
+                        <InputLabel for="documentation_doc" value="Foto / Berkas Dokumentasi Acara (PDF / Gambar maks. 10MB)" class="text-xs font-semibold text-gray-700" />
+                        <input
+                            id="documentation_doc"
+                            type="file"
+                            accept=".pdf,image/*"
+                            @change="form.documentation_doc = $event.target.files[0]"
+                            class="mt-1 block w-full text-xs text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer border border-gray-300 rounded"
+                        />
+                        <div v-if="report?.documentation_doc_path" class="mt-1.5 flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
+                            <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span>Dokumentasi tersimpan:</span>
+                            <a :href="route('events.documentation.download', event.id)" target="_blank" class="text-blue-600 underline font-semibold hover:text-blue-800">
+                                Unduh / Lihat Berkas
+                            </a>
+                        </div>
+                        <InputError :message="form.errors.documentation_doc" class="mt-1" />
                     </div>
 
                     <div class="md:col-span-2">

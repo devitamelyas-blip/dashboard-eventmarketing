@@ -50,6 +50,19 @@ class RemindH90Command extends Command
                     $this->error("Gagal mengirim ke [{$email}]: " . $e->getMessage());
                 }
             }
+
+            if ($event->picUser) {
+                try {
+                    $event->picUser->notify(new \App\Notifications\EventActivityNotification(
+                        title: 'Batas Waktu H+90 Jatuh Tempo',
+                        message: "Event Sales [{$event->code}] {$event->name} telah melewati batas waktu 90 hari. Mohon laporkan omzet aktual dan bukti invoice.",
+                        url: route('events.sales.edit', $event->id),
+                        type: 'warning'
+                    ));
+                } catch (\Throwable $e) {
+                    // silently proceed
+                }
+            }
         }
 
         $this->info("Selesai. Total {$count} email pengingat H+90 terkirim.");

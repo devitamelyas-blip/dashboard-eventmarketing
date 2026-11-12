@@ -17,6 +17,8 @@ class EventReport extends Model
         'actual_participants',
         'valid_leads',
         'actual_team_cost',
+        'attendance_doc_path',
+        'documentation_doc_path',
         'notes',
     ];
 

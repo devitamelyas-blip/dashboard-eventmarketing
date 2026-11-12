@@ -20,6 +20,15 @@ class DirectorDecisionController extends Controller
         $event->decision_stale_flag = false;
         $event->save();
 
+        if ($event->picUser) {
+            $event->picUser->notify(new \App\Notifications\EventActivityNotification(
+                title: 'Keputusan Direksi: ' . ucfirst($event->director_decision),
+                message: "Keputusan Direksi untuk event [{$event->code}] {$event->name} telah ditetapkan: " . strtoupper($event->director_decision) . ($event->director_note ? " - Catatan: {$event->director_note}" : ''),
+                url: route('events.index', ['search' => $event->code]),
+                type: $event->director_decision === 'disetujui' ? 'success' : 'warning'
+            ));
+        }
+
         activity()
             ->causedBy($request->user())
             ->performedOn($event)

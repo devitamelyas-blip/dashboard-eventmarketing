@@ -21,6 +21,32 @@ const branchName = computed(() => user.value?.branch?.name || 'Kantor Pusat');
 const isMobileSidebarOpen = ref(false);
 const activeSection = ref('');
 
+// Notifications state
+const notifications = computed(() => page.props.notifications);
+const unreadCount = computed(() => notifications.value?.unread_count || 0);
+const latestNotifications = computed(() => notifications.value?.latest || []);
+const isNotificationOpen = ref(false);
+
+const markAsRead = (n) => {
+    if (!n.read_at) {
+        router.post(route('notifications.read', n.id), {}, {
+            preserveScroll: true,
+            preserveState: true,
+        });
+    }
+    if (n.url) {
+        isNotificationOpen.value = false;
+        router.visit(n.url);
+    }
+};
+
+const markAllAsRead = () => {
+    router.post(route('notifications.readAll'), {}, {
+        preserveScroll: true,
+        preserveState: true,
+    });
+};
+
 const closeSidebar = () => {
     isMobileSidebarOpen.value = false;
 };
@@ -369,6 +395,99 @@ onMounted(() => {
                     >
                         {{ primaryRole }}
                     </span>
+
+                    <!-- In-App Notification Bell -->
+                    <div class="relative">
+                        <button
+                            type="button"
+                            @click="isNotificationOpen = !isNotificationOpen"
+                            class="relative p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition focus:outline-none cursor-pointer"
+                            title="Notifikasi Aktivitas"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            <!-- Badge Counter -->
+                            <span
+                                v-if="unreadCount > 0"
+                                class="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-black text-white ring-2 ring-white"
+                            >
+                                {{ unreadCount > 9 ? '9+' : unreadCount }}
+                            </span>
+                        </button>
+
+                        <!-- Notification Dropdown Panel -->
+                        <div
+                            v-if="isNotificationOpen"
+                            class="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-white shadow-xl border border-gray-200 z-50 overflow-hidden"
+                        >
+                            <!-- Header -->
+                            <div class="px-4 py-3 bg-[#0B132B] text-white flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold uppercase tracking-wider">Notifikasi</span>
+                                    <span v-if="unreadCount > 0" class="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-500 text-white">
+                                        {{ unreadCount }} baru
+                                    </span>
+                                </div>
+                                <button
+                                    v-if="unreadCount > 0"
+                                    type="button"
+                                    @click="markAllAsRead"
+                                    class="text-[11px] text-gray-300 hover:text-white underline cursor-pointer"
+                                >
+                                    Tandai semua dibaca
+                                </button>
+                            </div>
+
+                            <!-- List -->
+                            <div class="max-h-80 overflow-y-auto divide-y divide-gray-100">
+                                <div
+                                    v-for="n in latestNotifications"
+                                    :key="n.id"
+                                    @click="markAsRead(n)"
+                                    class="p-3 text-xs transition cursor-pointer hover:bg-gray-50 flex items-start gap-2.5"
+                                    :class="!n.read_at ? 'bg-blue-50/50' : 'bg-white'"
+                                >
+                                    <!-- Indicator Dot -->
+                                    <span
+                                        class="mt-1 w-2 h-2 rounded-full shrink-0"
+                                        :class="{
+                                            'bg-emerald-500': n.type === 'success',
+                                            'bg-amber-500': n.type === 'warning',
+                                            'bg-red-500': n.type === 'danger',
+                                            'bg-blue-500': n.type === 'info' || !n.type,
+                                        }"
+                                    ></span>
+
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center justify-between gap-1">
+                                            <span class="font-bold text-gray-900 truncate text-[11px]">{{ n.title }}</span>
+                                            <span class="text-[10px] text-gray-400 shrink-0">{{ n.created_at_human }}</span>
+                                        </div>
+                                        <p class="text-[11px] text-gray-600 mt-0.5 line-clamp-2 leading-relaxed">
+                                            {{ n.message }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div v-if="!latestNotifications?.length" class="p-8 text-center text-gray-400 text-xs">
+                                    <svg class="w-8 h-8 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                                    Tidak ada notifikasi saat ini
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="p-2 bg-gray-50 text-center border-t border-gray-100">
+                                <button
+                                    type="button"
+                                    @click="isNotificationOpen = false"
+                                    class="text-[11px] text-gray-600 hover:text-gray-900 font-semibold cursor-pointer"
+                                >
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Profile Dropdown -->
                     <div class="relative ml-1">

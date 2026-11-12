@@ -31,6 +31,7 @@ const form = useForm({
     estimated_relevance_basis: '',
     proposal_cost: '',
     team_budget: '',
+    proposal_doc: null,
 });
 
 const formatRupiah = (val) => {
@@ -326,6 +327,20 @@ const submit = () => {
                             </span>
                             <InputError :message="form.errors.team_budget" class="mt-1" />
                         </div>
+                    </div>
+
+                    <!-- Upload Dokumen Proposal -->
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <InputLabel for="proposal_doc" value="Lampiran Dokumen Proposal / Rundown Acara (Opsional, PDF maks. 10MB)" class="text-xs font-semibold text-gray-700" />
+                        <input
+                            id="proposal_doc"
+                            type="file"
+                            accept=".pdf,application/pdf"
+                            @change="form.proposal_doc = $event.target.files[0]"
+                            class="mt-1 block w-full text-xs text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 cursor-pointer border border-gray-300 rounded"
+                        />
+                        <InputError :message="form.errors.proposal_doc" class="mt-1" />
+                        <p class="text-[10px] text-gray-500 mt-1">Unggah dokumen rancangan proposal lengkap untuk ditinjau oleh Tim Marketing.</p>
                     </div>
 
                     <!-- Total Preview Banner -->

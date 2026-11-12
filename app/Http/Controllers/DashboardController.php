@@ -107,6 +107,30 @@ class DashboardController extends Controller
         $awarenessCount = (clone $portfolioEventsQuery)->where('goal', Goal::AWARENESS)->count();
         $relationshipCount = (clone $portfolioEventsQuery)->where('goal', Goal::RELATIONSHIP)->count();
 
+        // Analytics: Kinerja Anggaran per Cabang
+        $branchPerformance = (clone $portfolioEventsQuery)
+            ->with(['branch', 'report'])
+            ->get()
+            ->groupBy('branch_id')
+            ->map(function ($events) {
+                $branchName = $events->first()->branch?->name ?? 'Cabang Lain';
+                $plan = 0.0;
+                $actual = 0.0;
+                foreach ($events as $ev) {
+                    $plan += ((float) $ev->proposal_cost + (float) $ev->team_budget);
+                    if ($ev->report && $ev->report->actual_team_cost !== null) {
+                        $actual += ((float) $ev->proposal_cost + (float) $ev->report->actual_team_cost);
+                    }
+                }
+                return [
+                    'branch_name' => $branchName,
+                    'total_events' => $events->count(),
+                    'plan_budget' => $plan,
+                    'actual_cost' => $actual,
+                ];
+            })
+            ->values();
+
         // Data Tabel Monitoring 10 Event Terbaru
         $tableEvents = (clone $portfolioEventsQuery)
             ->with(['branch', 'report', 'salesUpdate'])
@@ -195,6 +219,7 @@ class DashboardController extends Controller
                     'pending' => $pendingVerificationCount,
                     'correction' => $correctionNeededCount,
                 ],
+                'branch_performance' => $branchPerformance,
             ],
             'tableEvents' => $tableEvents,
             'selectedPortfolio' => $selectedPortfolio,
